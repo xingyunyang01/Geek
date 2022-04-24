@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
-
-	"github.com/golang/glog"
+	"strings"
 )
 
 func main() {
 	flag.Parse()
-	glog.Info("Starting http server...")
+	log.Println("Starting http server...")
 	http.HandleFunc("/get", get)
 
 	http.HandleFunc("/healthz", healthz)
@@ -24,8 +24,11 @@ func main() {
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
-	reqIp := r.Header.Get("ipv4")
-	glog.Info(reqIp)
+	reqIp, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr))
+
+	if err == nil {
+		log.Println(reqIp)
+	}
 
 	if len(r.Header) > 0 {
 		for k, v := range r.Header {
@@ -37,5 +40,5 @@ func get(w http.ResponseWriter, r *http.Request) {
 
 func healthz(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "200 ok\n")
-	glog.Info("200 ok")
+	log.Println("200 ok")
 }
